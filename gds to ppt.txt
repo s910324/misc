@@ -1,0 +1,41 @@
+app        = pya.Application.instance
+layoutview = pya.LayoutView.current()
+cellview   = pya.CellView().active()
+view       = cellview.view()
+layout     = cellview.layout()
+top_cell   = layout.top_cell()
+unit       = 1#layout.dbu
+if not (layoutview  == None):
+    for ishape in layoutview .each_object_selected():
+        pshape = ishape.shape
+    
+        if pshape.is_polygon:
+            print ("")
+            ipoints = []
+            for i in pshape.polygon.each_point_hull():
+                ipoints.append("Array(%f, %f)" % (i.x * unit, i.y * unit))
+            ipoints.append(ipoints[0])
+            print((add_KPolygon(Array(%s))" % ", ".join(ipoints))
+
+
+
+'
+'Sub test_add_polygon()
+'    Call add_KPolygon(Array(Array(-921#, -337#), Array(-886#, -310#), Array(-859#, -310#), Array(-890#, -337#), Array(-921#, -337#)), "NA2")
+'End Sub
+'
+Sub add_KPolygon(ByVal varData As Variant, Optional ByVal layer_name As String = "")
+    Dim pArray() As Single
+    length = UBound(varData) - LBound(varData)
+    ReDim pArray(1 To length + 1, 1 To 2) As Single
+    For i = 0 To length
+        For j = 0 To 1
+            pArray(i + 1, j + 1) = varData(i)(j)
+        Next j
+    Next i
+
+    Set new_polygon = ActiveWindow.View.Slide.Shapes.AddPolyline(pArray)
+    If layer_name <> "" Then
+        Call move_shape_to_layer(new_polygon, layer_name)
+    End If
+End Sub

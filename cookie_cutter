@@ -1,0 +1,19 @@
+Sub cookie_cutter()
+    Dim active_slide As Slide
+    Dim d_mask_shape As ShapeRange
+    Dim selected_shape, mask_shape As Shape
+    Set active_slide = ActiveWindow.View.Slide
+
+    mask_flag = True
+    For Each selected_shape In ActiveWindow.selection.ShapeRange
+        If mask_flag Then
+            Set mask_shape = selected_shape
+            mask_flag = False
+        Else
+            Set d_mask_shape = mask_shape.Duplicate
+            d_mask_shape.Left = mask_shape.Left
+            d_mask_shape.Top = mask_shape.Top
+            active_slide.Shapes.Range(Array(d_mask_shape.Name, selected_shape.Name)).MergeShapes msoMergeIntersect, selected_shape
+        End If
+    Next selected_shape
+End Sub

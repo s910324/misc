@@ -1,19 +1,90 @@
+
+
 Sub cookie_cutter()
     Dim active_slide As Slide
     Dim d_mask_shape As ShapeRange
+    Dim selected_shape_list As ShapeRange
     Dim selected_shape, mask_shape As Shape
     Set active_slide = ActiveWindow.View.Slide
 
+    mask_flag = True
+    Set selected_shape_list = get_shape_list(ActiveWindow.selection.ShapeRange)
+    
+    For Each selected_shape In selected_shape_list
+        If mask_flag Then
+            Set mask_shape = selected_shape
+            mask_flag = False
+        Else
+            Set d_mask_shape = duplicate_shape(mask_shape)
+            active_slide.Shapes.Range(Array(d_mask_shape.Name, selected_shape.Name)).MergeShapes msoMergeSubtract
+        End If
+    Next selected_shape
+    mask_shape.ZOrder msoSendToBack
+    
+End Sub
+
+Sub reverse_cutter()
+    Dim active_slide As Slide
+    Set active_slide = ActiveWindow.View.Slide
+    Dim mask_shape, selected_shape As Shape
+    Dim cutter_shaperange As ShapeRange
+    Dim object_list As Object
+    Set object_list = CreateObject("system.collections.arraylist")
+    
     mask_flag = True
     For Each selected_shape In ActiveWindow.selection.ShapeRange
         If mask_flag Then
             Set mask_shape = selected_shape
             mask_flag = False
         Else
-            Set d_mask_shape = mask_shape.Duplicate
-            d_mask_shape.Left = mask_shape.Left
-            d_mask_shape.Top = mask_shape.Top
-            active_slide.Shapes.Range(Array(d_mask_shape.Name, selected_shape.Name)).MergeShapes msoMergeIntersect, selected_shape
+            object_list.add selected_shape.Name
         End If
     Next selected_shape
+
+    Set cutter_shaperange = duplicate_shape_range(active_slide.Shapes.Range(object_list.toarray))
+    get_shape_list(cutter_shaperange).MergeShapes msoMergeUnion
+    Set cut_shape = active_slide.Shapes.Range(active_slide.Shapes.Count)
+    active_slide.Shapes.Range(Array(cut_shape.Name, mask_shape.Name)).MergeShapes msoMergeSubtract
+    
 End Sub
+
+Function get_shape_list(ByVal shape_list As ShapeRange) As ShapeRange
+    Dim active_slide As Slide
+    Set active_slide = ActiveWindow.View.Slide
+    Dim ishape As Shape
+    Dim object_list As Object
+    Set object_list = CreateObject("system.collections.arraylist")
+    
+    For Each ishape In shape_list
+        ishape_type = ishape.Type
+        Select Case ishape_type
+            Case msoGroup:
+                For Each jshape In ishape.Ungroup
+                    object_list.add jshape.Name
+
+                Next jshape
+            Case msoLine:
+            Case Else:
+                object_list.add ishape.Name
+        End Select
+    Next ishape
+    Set get_shape_list = active_slide.Shapes.Range(object_list.toarray)
+
+End Function
+
+Function duplicate_shape_range(ByVal shape_range As ShapeRange) As ShapeRange
+    Dim object_list As Object
+    Set object_list = CreateObject("system.collections.arraylist")
+    For Each ishape In shape_range
+        object_list.add duplicate_shape(ishape).Name
+    Next ishape
+    Set duplicate_shape_range = ActiveWindow.View.Slide.Shapes.Range(object_list.toarray)
+End Function
+
+Function duplicate_shape(ByVal ishape As Shape)
+    Set d_shape = ishape.Duplicate
+    d_shape.Top = ishape.Top
+    d_shape.Left = ishape.Left
+    Set duplicate_shape = d_shape
+End Function
+

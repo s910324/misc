@@ -88,3 +88,49 @@ Function duplicate_shape(ByVal ishape As Shape)
     Set duplicate_shape = d_shape
 End Function
 
+
+Sub dumb_data(picframe As PictureFormatType, module_name)
+    
+    Commands = "'" + JoinText(picframe.x, picframe.y, picframe.width, picframe.Height, picframe.Rotation, picframe.Crop_Left, picframe.Crop_Right, picframe.Crop_Top, picframe.Crop_Bottom, ", ")
+    
+    Call InsertCode("Module2", Commands)
+    
+End Sub
+
+
+Sub InsertCode(module_name, Commands)
+ 
+    Set VBComps = ActivePresentation.VBProject.VBComponents
+    Set VBComp = VBComps(module_name)
+    Set VBCodeMod = VBComp.CodeModule
+
+    With VBCodeMod
+        LineNum = .CountOfLines + 1
+        .InsertLines LineNum, Commands
+    End With
+
+End Sub
+
+Sub ClearCode(module_name)
+    Set VBComps = ActivePresentation.VBProject.VBComponents
+    Set VBComp = VBComps(module_name)
+    Set VBCodeMod = VBComp.CodeModule
+
+    With VBCodeMod
+        .DeleteLines 1, .CountOfLines
+    End With
+
+End Sub
+
+Sub readCode()
+    Set VBComps = ActivePresentation.VBProject.VBComponents
+    Set VBComp = VBComps("Module2")
+    Set VBCodeMod = VBComp.CodeModule
+
+    pprint VBCodeMod.Lines(1, VBCodeMod.CountOfLines)
+
+End Sub
+
+
+https://en.wikibooks.org/wiki/Visual_Basic_for_Applications/Clipboard_VBA
+
